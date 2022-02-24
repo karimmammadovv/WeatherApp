@@ -1,5 +1,6 @@
 package com.karimmammadov.weatherappp.view
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -26,20 +27,61 @@ class MainActivity : AppCompatActivity() {
     val weatherError = MutableLiveData<Boolean>()
     val weatherLoad = MutableLiveData<Boolean>()
 
-    private lateinit var GET:SharedPreferences
-    private lateinit var SET:SharedPreferences.Editor
+    private lateinit var degreePrefs:SharedPreferences
+    var storedDegree : String? = null
+
+    private lateinit var codePrefs :SharedPreferences
+    var storedCode : String? = null
+
+    private lateinit var cityPrefs :SharedPreferences
+    var storedCity : String? = null
+
+    private lateinit var humidityPrefs :SharedPreferences
+    var storedHumidity: String? = null
+
+    private lateinit var speedPrefs :SharedPreferences
+    var storedSpeed : String? = null
+
+    private lateinit var feelsPrefs :SharedPreferences
+    var storedFeels : String? = null
+
+    private lateinit var descriptionPrefs :SharedPreferences
+    var storedDescription : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        GET = getSharedPreferences(packageName, MODE_PRIVATE)
-        SET = GET.edit()
+        degreePrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedDegree = degreePrefs.getString("degree", "DEFAULT")
+        degreeText.text = storedDegree
+
+        cityPrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedCity = cityPrefs.getString("city","DEFAULT")
+        cityNameText.text = storedCity
+
+        codePrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedCode = codePrefs.getString("code","DEFAULT")
+        cityCodeText.text = storedCode
+
+        humidityPrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedHumidity = humidityPrefs.getString("humidity","DEFAULT")
+        humidityText.text = storedHumidity
+
+        speedPrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedSpeed = speedPrefs.getString("speed","DEFAULT")
+        speedText.text = storedSpeed
+
+        feelsPrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedFeels = feelsPrefs.getString("feels","DEFAULT")
+        feelsLikeText.text = storedFeels
+
+        descriptionPrefs = this.getSharedPreferences("com.karimmammadov.weatherappp", MODE_PRIVATE)
+        storedDescription = descriptionPrefs.getString("description","DEFAULT")
+        descriptionText.text = storedDescription
 
        searchCity.setOnClickListener {
            val cityName = editCity.text.toString()
-           SET.putString("cityName",cityName)
-           SET.apply()
            getDataFromAPI(cityName!!)
            getLiveData()
        }
@@ -56,10 +98,19 @@ class MainActivity : AppCompatActivity() {
                 humidityText.text = data.main.humidity.toString()
                 speedText.text = data.wind.speed.toString()
                 feelsLikeText.text = data.main.feels_like.toString() + "°C"
-              descriptionText.text =  data.weather.get(0).description
+                descriptionText.text =  data.weather.get(0).description.toString()
+
+                degreePrefs.edit().putString("degree", data.main.temp.toString() + "°C").apply()
+                codePrefs.edit().putString("code",data.sys.country.toString()).apply()
+                cityPrefs.edit().putString("city",data.name.toString()).apply()
+                humidityPrefs.edit().putString("humidity",data.main.humidity.toString()).apply()
+                speedPrefs.edit().putString("speed",data.wind.speed.toString()).apply()
+                feelsPrefs.edit().putString("feels",data.main.feels_like.toString() + "°C").apply()
+                descriptionPrefs.edit().putString("description",data.weather.get(0).description.toString()).apply()
             }
         })
     }
+
 
     fun getDataFromAPI(cityName:String){
         weatherLoad.value = true
